@@ -279,6 +279,28 @@ audio { border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
 
+/* ---------- Groq API Key Box ---------- */
+.groq-key-box {
+    background: linear-gradient(135deg, rgba(9,132,227,.06), rgba(116,185,255,.08));
+    border: 1px solid rgba(9,132,227,.2);
+}
+[data-bs-theme="dark"] .groq-key-box {
+    background: linear-gradient(135deg, rgba(9,132,227,.10), rgba(13,26,46,.5));
+    border-color: rgba(9,132,227,.3);
+}
+.groq-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--brand-primary);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
 /* ---------- Responsive – petits écrans ---------- */
 @media (max-width: 576px) {
     .mic-btn { width: 90px; height: 90px; }

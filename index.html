@@ -120,6 +120,50 @@
                 <!-- PANNEAU FICHIER -->
                 <div class="card shadow border-0 rounded-4 mb-4 d-none" id="filePanel">
                     <div class="card-body p-4">
+
+                        <!-- Clé API Groq -->
+                        <div class="groq-key-box rounded-3 p-3 mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="groq-badge"><i class="bi bi-lightning-charge-fill"></i> Groq Whisper</span>
+                                <span class="text-muted small">Transcription rapide — même 30 min en quelques secondes</span>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                                <input type="password" class="form-control" id="groqApiKey"
+                                    placeholder="Collez votre clé API Groq (gsk_…)"
+                                    autocomplete="off">
+                                <button class="btn btn-outline-secondary" id="toggleKey" type="button" title="Afficher/Masquer">
+                                    <i class="bi bi-eye" id="eyeIcon"></i>
+                                </button>
+                                <button class="btn btn-outline-primary" id="saveKey" type="button">
+                                    <i class="bi bi-floppy me-1"></i>Sauvegarder
+                                </button>
+                            </div>
+                            <div class="mt-2 small text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Clé gratuite sur <a href="https://console.groq.com" target="_blank" rel="noopener" class="text-primary">console.groq.com</a> — stockée uniquement dans votre navigateur.
+                            </div>
+                        </div>
+
+                        <!-- Langue Groq -->
+                        <div class="row mb-3">
+                            <div class="col-sm-5">
+                                <label class="form-label fw-semibold small">
+                                    <i class="bi bi-translate me-1"></i>Langue du fichier audio
+                                </label>
+                                <select class="form-select form-select-sm" id="groqLang">
+                                    <option value="fr">🇫🇷 Français</option>
+                                    <option value="en">🇺🇸 English</option>
+                                    <option value="ar">🇸🇦 العربية</option>
+                                    <option value="es">🇪🇸 Español</option>
+                                    <option value="de">🇩🇪 Deutsch</option>
+                                    <option value="it">🇮🇹 Italiano</option>
+                                    <option value="pt">🇵🇹 Português</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Drop zone -->
                         <div class="drop-zone rounded-3 text-center p-5 mb-3" id="dropZone">
                             <i class="bi bi-cloud-arrow-up display-4 mb-3 d-block text-primary"></i>
                             <p class="fw-semibold mb-1">Glissez-déposez votre fichier audio ici</p>
@@ -127,9 +171,9 @@
                             <label class="btn btn-outline-primary rounded-pill px-4" for="audioFile">
                                 <i class="bi bi-folder2-open me-2"></i>Parcourir…
                             </label>
-                            <input type="file" id="audioFile" class="d-none" accept=".mp3,.wav,.m4a,.ogg,.webm">
+                            <input type="file" id="audioFile" class="d-none" accept=".mp3,.wav,.m4a,.ogg,.webm,.flac,.mp4">
                             <p class="text-muted small mt-3 mb-0">
-                                Formats : MP3, WAV, M4A, OGG, WEBM — Max : 10 Mo
+                                Formats : MP3, WAV, M4A, OGG, WEBM, FLAC — Max : 25 Mo
                             </p>
                         </div>
 
@@ -150,7 +194,7 @@
 
                         <div class="text-center mt-3">
                             <button class="btn btn-success btn-lg rounded-pill px-5" id="transcribeBtn" disabled>
-                                <i class="bi bi-arrow-repeat me-2"></i>Transcrire le fichier
+                                <i class="bi bi-arrow-repeat me-2"></i>Transcrire avec Groq
                             </button>
                         </div>
                     </div>
@@ -215,7 +259,7 @@
             <i class="bi bi-soundwave me-1"></i>
             <strong>VoiceScript</strong> — Convertisseur Audio en Texte gratuit
         </p>
-        <p class="mb-0">Utilise la <strong>Web Speech API</strong> — Fonctionne sur Chrome, Edge et Safari.</p>
+        <p class="mb-0">Micro : <strong>Web Speech API</strong> — Fichiers : <strong>Groq Whisper</strong> (gratuit, ultra-rapide).</p>
     </div>
 </footer>
 

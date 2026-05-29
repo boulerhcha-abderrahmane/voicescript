@@ -12,6 +12,11 @@ const micBtn         = document.getElementById('micBtn');
 const micIcon        = document.getElementById('micIcon');
 const micStatus      = document.getElementById('micStatus');
 const langSelect     = document.getElementById('langSelect');
+const groqApiKeyEl   = document.getElementById('groqApiKey');
+const toggleKeyBtn   = document.getElementById('toggleKey');
+const eyeIcon        = document.getElementById('eyeIcon');
+const saveKeyBtn     = document.getElementById('saveKey');
+const groqLangEl     = document.getElementById('groqLang');
 const dropZone       = document.getElementById('dropZone');
 const audioFile      = document.getElementById('audioFile');
 const filePreview    = document.getElementById('filePreview');
@@ -64,17 +69,42 @@ modeTabs.querySelectorAll('.nav-link').forEach(btn => {
 });
 
 /* ============================================================
+   GROQ API KEY – sauvegarde dans localStorage
+============================================================ */
+// Charger la clé sauvegardée au démarrage
+const savedKey = localStorage.getItem('groq_api_key');
+if (savedKey) groqApiKeyEl.value = savedKey;
+
+// Afficher / masquer la clé
+toggleKeyBtn.addEventListener('click', () => {
+    const isPassword = groqApiKeyEl.type === 'password';
+    groqApiKeyEl.type = isPassword ? 'text' : 'password';
+    eyeIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+});
+
+// Sauvegarder la clé
+saveKeyBtn.addEventListener('click', () => {
+    const key = groqApiKeyEl.value.trim();
+    if (!key.startsWith('gsk_')) {
+        showAlert('danger', '<i class="bi bi-key me-2"></i>Clé invalide. Elle doit commencer par <strong>gsk_</strong>.');
+        return;
+    }
+    localStorage.setItem('groq_api_key', key);
+    showAlert('success', '<i class="bi bi-check-circle me-2"></i>Clé API sauvegardée dans votre navigateur.');
+});
+
+/* ============================================================
    WEB SPEECH API – MICROPHONE
 ============================================================ */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition    = null;
-let isRecording    = false;
+let recognition     = null;
+let isRecording     = false;
 let finalTranscript = '';
 
 if (!SpeechRecognition) {
     micBtn.disabled = true;
     showAlert('warning',
-        '<strong>Attention :</strong> Votre navigateur ne supporte pas la reconnaissance vocale. ' +
+        '<strong>Attention :</strong> Votre navigateur ne supporte pas la reconnaissance vocale en direct. ' +
         'Utilisez <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong>.', false);
 } else {
     recognition = new SpeechRecognition();
@@ -104,7 +134,6 @@ if (!SpeechRecognition) {
         stopRecognition();
     });
 
-    // Redémarrage automatique pour la continuité
     recognition.addEventListener('end', () => {
         if (isRecording) try { recognition.start(); } catch (_) { stopRecognition(); }
     });
@@ -142,11 +171,10 @@ function stopRecognition() {
 }
 
 /* ============================================================
-   FICHIER AUDIO – LOCAL (pas d'upload serveur)
+   FICHIER AUDIO – Drag & Drop + Input
 ============================================================ */
 let selectedFile = null;
 
-// Drag & drop
 dropZone.addEventListener('dragover',  (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', (e) => {
@@ -154,35 +182,29 @@ dropZone.addEventListener('drop', (e) => {
     dropZone.classList.remove('dragover');
     if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
 });
-
-// Clic sur la zone (hors label/input)
 dropZone.addEventListener('click', (e) => {
     if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') audioFile.click();
 });
-
 audioFile.addEventListener('change', () => {
     if (audioFile.files[0]) handleFileSelect(audioFile.files[0]);
 });
-
 removeFileBtn.addEventListener('click', resetFile);
 
 function handleFileSelect(file) {
-    const allowedExts = /\.(mp3|wav|m4a|ogg|webm)$/i;
-    const maxSize     = 10 * 1024 * 1024;
+    const allowedExts = /\.(mp3|wav|m4a|ogg|webm|flac|mp4)$/i;
+    const maxSize     = 25 * 1024 * 1024; // 25 Mo (limite Groq)
 
     if (!allowedExts.test(file.name)) {
-        showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>Format non supporté. Utilisez MP3, WAV, M4A, OGG ou WEBM.');
+        showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>Format non supporté. Utilisez MP3, WAV, M4A, OGG, WEBM ou FLAC.');
         return;
     }
     if (file.size > maxSize) {
-        showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>Fichier trop volumineux. Maximum : 10 Mo.');
+        showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>Fichier trop volumineux. Maximum : 25 Mo (limite Groq).');
         return;
     }
 
     selectedFile = file;
     clearAlerts();
-
-    // Lecture locale via URL.createObjectURL — aucun upload serveur
     fileNameEl.textContent = file.name;
     fileSizeEl.textContent = formatBytes(file.size);
     audioPlayer.src        = URL.createObjectURL(file);
@@ -199,63 +221,76 @@ function resetFile() {
     transcribeBtn.disabled = true;
 }
 
-// Bouton Transcrire → joue le fichier + démarre la reconnaissance
+/* ============================================================
+   GROQ WHISPER – Transcription fichier
+============================================================ */
 transcribeBtn.addEventListener('click', () => {
     if (!selectedFile) return;
 
-    if (!SpeechRecognition) {
-        showAlert('danger', 'La reconnaissance vocale n\'est pas disponible dans ce navigateur.');
+    const apiKey = groqApiKeyEl.value.trim() || localStorage.getItem('groq_api_key') || '';
+    if (!apiKey) {
+        showAlert('danger',
+            '<i class="bi bi-key me-2"></i>Entrez votre clé API Groq. ' +
+            'Obtenez-la gratuitement sur <a href="https://console.groq.com" target="_blank" class="alert-link">console.groq.com</a>.');
+        return;
+    }
+    if (!apiKey.startsWith('gsk_')) {
+        showAlert('danger', '<i class="bi bi-key me-2"></i>Clé API invalide. Elle doit commencer par <strong>gsk_</strong>.');
         return;
     }
 
-    const fileRec = new SpeechRecognition();
-    fileRec.continuous     = true;
-    fileRec.interimResults = true;
-    fileRec.lang           = langSelect.value;
+    transcribeWithGroq(selectedFile, apiKey);
+});
 
-    let accumulated = '';
-
+async function transcribeWithGroq(file, apiKey) {
     showLoading(true);
     clearAlerts();
     transcribeBtn.disabled = true;
 
-    fileRec.addEventListener('result', (e) => {
-        let interim = '';
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-            const t = e.results[i][0].transcript;
-            e.results[i].isFinal ? (accumulated += t + ' ') : (interim += t);
+    // Construction du FormData pour l'API Groq Whisper
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model', 'whisper-large-v3-turbo'); // Modèle le plus rapide
+    formData.append('language', groqLangEl.value);
+    formData.append('response_format', 'text');
+
+    try {
+        const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + apiKey },
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            const msg = err?.error?.message || `Erreur HTTP ${res.status}`;
+
+            // Message d'erreur adapté selon le code
+            if (res.status === 401) {
+                showAlert('danger', '<i class="bi bi-key me-2"></i>Clé API invalide ou expirée. Vérifiez sur console.groq.com.');
+            } else if (res.status === 413) {
+                showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>Fichier trop volumineux pour l\'API Groq (max 25 Mo).');
+            } else if (res.status === 429) {
+                showAlert('warning', '<i class="bi bi-clock me-2"></i>Limite de requêtes atteinte. Attendez quelques secondes et réessayez.');
+            } else {
+                showAlert('danger', `<i class="bi bi-x-circle me-2"></i>${msg}`);
+            }
+            return;
         }
-        transcriptText.value = accumulated + interim;
+
+        // La réponse est du texte brut (response_format: text)
+        const text = await res.text();
+        transcriptText.value = text.trim();
         updateCounters();
-    });
+        showAlert('success', '<i class="bi bi-check-circle me-2"></i>Transcription Groq Whisper terminée avec succès !');
 
-    fileRec.addEventListener('end', () => {
-        audioPlayer.pause();
+    } catch (e) {
+        showAlert('danger', '<i class="bi bi-wifi-off me-2"></i>Erreur réseau. Vérifiez votre connexion internet.');
+    } finally {
         showLoading(false);
         transcribeBtn.disabled = false;
-        showAlert('success', '<i class="bi bi-check-circle me-2"></i>Transcription du fichier terminée !');
-    });
-
-    fileRec.addEventListener('error', () => {
-        audioPlayer.pause();
-        showLoading(false);
-        transcribeBtn.disabled = false;
-        showAlert('warning',
-            '<i class="bi bi-exclamation-triangle me-2"></i>' +
-            'La transcription de fichiers fonctionne mieux sur Chrome. ' +
-            'Vous pouvez aussi lire le fichier et utiliser l\'onglet <strong>Microphone en direct</strong>.'
-        );
-    });
-
-    audioPlayer.currentTime = 0;
-    audioPlayer.play();
-    fileRec.start();
-
-    // Arrêt automatique quand l'audio se termine
-    audioPlayer.addEventListener('ended', () => {
-        try { fileRec.stop(); } catch (_) {}
-    }, { once: true });
-});
+    }
+}
 
 /* ============================================================
    COPIER
@@ -330,7 +365,7 @@ function showAlert(type, message, autoDismiss = true) {
     div.innerHTML = `<span>${message}</span><button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>`;
     alertBox.innerHTML = '';
     alertBox.appendChild(div);
-    if (autoDismiss) setTimeout(() => div.remove(), 5000);
+    if (autoDismiss) setTimeout(() => div.remove(), 6000);
 }
 
 function clearAlerts() { alertBox.innerHTML = ''; }
