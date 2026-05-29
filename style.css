@@ -1,0 +1,287 @@
+/* ============================================================
+   VoiceScript – Feuille de style principale
+   Thème clair + mode sombre, design moderne Bootstrap 5
+   ============================================================ */
+
+/* ---------- Palette personnalisée ---------- */
+:root {
+    --bleu:  #0984e3;
+    --noir:  #111111;
+    --blanc: #ffffff;
+
+    /* Mapping vers les variables internes */
+    --brand-primary:   var(--bleu);
+    --brand-secondary: #74b9ff;          /* bleu clair, dérivé proche */
+    --bg-body:         #f0f6ff;          /* blanc légèrement teinté bleu */
+    --bg-card:         var(--blanc);
+    --bg-nav:          rgba(255,255,255,0.88);
+    --text-main:       var(--noir);
+    --text-muted:      #4a5568;
+    --border-color:    #c8ddf5;
+    --drop-bg:         #e6f0ff;
+    --drop-border:     var(--bleu);
+    --tab-bg:          #e6f0ff;
+    --mic-bg:          #d4e8fb;
+    --mic-active:      var(--bleu);
+    --shadow-card:     0 4px 24px rgba(9,132,227,.12);
+    --transition:      .25s ease;
+}
+
+/* ---------- Variables CSS – Mode sombre ---------- */
+[data-bs-theme="dark"] {
+    --bg-body:      var(--noir);
+    --bg-card:      #1a1a1a;
+    --bg-nav:       rgba(17,17,17,0.92);
+    --text-main:    #e2e8f0;
+    --text-muted:   #94a3b8;
+    --border-color: #2a2a2a;
+    --drop-bg:      #0d1a2e;
+    --drop-border:  var(--bleu);
+    --tab-bg:       #161616;
+    --mic-bg:       #0d1a2e;
+    --shadow-card:  0 4px 24px rgba(0,0,0,.50);
+}
+
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-body);
+    color: var(--text-main);
+    transition: background var(--transition), color var(--transition);
+    min-height: 100vh;
+}
+
+/* ---------- Navbar ---------- */
+#mainNav {
+    background: var(--bg-nav);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    transition: background var(--transition);
+}
+
+.logo-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+/* ---------- Hero ---------- */
+.hero-section {
+    background: linear-gradient(135deg, #e6f0ff 0%, #f0f6ff 50%, #e6f0ff 100%);
+    border-bottom: 1px solid var(--border-color);
+}
+[data-bs-theme="dark"] .hero-section {
+    background: linear-gradient(135deg, #111111 0%, #0d1a2e 50%, #111111 100%);
+}
+
+.hero-badge .badge {
+    background: rgba(9,132,227,.13);
+    color: var(--brand-primary);
+    font-size: .8rem;
+    letter-spacing: .5px;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ---------- Feature Cards ---------- */
+.feature-card {
+    background: var(--bg-card);
+    border-radius: 16px !important;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+.feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-card) !important;
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---------- Section convertisseur ---------- */
+.converter-section {
+    background: var(--bg-body);
+}
+
+/* ---------- Onglets personnalisés ---------- */
+.tab-switcher {
+    background: var(--tab-bg);
+    border: 1px solid var(--border-color);
+}
+.tab-switcher .nav-link {
+    color: var(--text-muted);
+    transition: all var(--transition);
+    padding: .6rem 1rem;
+}
+.tab-switcher .nav-link.active {
+    background: var(--brand-primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(9,132,227,.35);
+}
+
+/* ---------- Cards ---------- */
+.card {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    border-radius: 16px !important;
+}
+
+/* ---------- Bouton microphone ---------- */
+.mic-btn {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: none;
+    background: var(--mic-bg);
+    color: var(--brand-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    position: relative;
+    box-shadow: 0 0 0 0 rgba(9,132,227,.4);
+}
+.mic-btn:hover {
+    background: var(--brand-primary);
+    color: #fff;
+    transform: scale(1.08);
+}
+/* État actif : enregistrement en cours */
+.mic-btn.recording {
+    background: #ef4444;
+    color: #fff;
+    animation: pulse-ring 1.2s infinite;
+}
+@keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
+    70%  { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+/* ---------- Zone drag & drop ---------- */
+.drop-zone {
+    border: 2px dashed var(--border-color);
+    background: var(--drop-bg);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.drop-zone:hover,
+.drop-zone.dragover {
+    border-color: var(--drop-border);
+    background: rgba(9,132,227,.07);
+}
+
+/* ---------- Textarea transcription ---------- */
+.transcript-area {
+    border-radius: 10px;
+    font-size: 1rem;
+    line-height: 1.7;
+    resize: vertical;
+    border: 1px solid var(--border-color);
+    background: var(--bg-body);
+    color: var(--text-main);
+    transition: border-color var(--transition), background var(--transition);
+}
+.transcript-area:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(9,132,227,.18);
+    background: var(--bg-card);
+}
+
+/* ---------- Animation de chargement (vagues audio) ---------- */
+.wave-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 5px;
+    height: 50px;
+}
+.wave-bar {
+    display: inline-block;
+    width: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to top, var(--brand-primary), var(--brand-secondary));
+    animation: wave 1s ease-in-out infinite;
+}
+.wave-bar:nth-child(1) { animation-delay: 0s;    height: 20px; }
+.wave-bar:nth-child(2) { animation-delay: .15s;  height: 35px; }
+.wave-bar:nth-child(3) { animation-delay: .30s;  height: 50px; }
+.wave-bar:nth-child(4) { animation-delay: .15s;  height: 35px; }
+.wave-bar:nth-child(5) { animation-delay: 0s;    height: 20px; }
+
+@keyframes wave {
+    0%, 100% { transform: scaleY(0.5); opacity: .6; }
+    50%       { transform: scaleY(1);   opacity: 1;  }
+}
+
+/* ---------- Badge statut micro ---------- */
+#micStatus {
+    background: #e6f0ff;
+    color: var(--text-muted);
+    transition: all var(--transition);
+}
+[data-bs-theme="dark"] #micStatus {
+    background: #0d1a2e;
+}
+#micStatus.recording {
+    background: #fee2e2;
+    color: #dc2626;
+}
+#micStatus.done {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+/* ---------- Boutons principaux ---------- */
+.btn-primary {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    border: none;
+    transition: opacity var(--transition), transform var(--transition);
+}
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+
+/* ---------- Alertes animées ---------- */
+.alert { border-radius: 12px !important; animation: fadeSlide .3s ease; }
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Lecteur audio ---------- */
+audio { border-radius: 10px; }
+
+/* ---------- Scrollbar personnalisée ---------- */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-body); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
+
+/* ---------- Responsive – petits écrans ---------- */
+@media (max-width: 576px) {
+    .mic-btn { width: 90px; height: 90px; }
+    .display-4 { font-size: 2rem; }
+    #resultCard .card-header { flex-direction: column; gap: .5rem; align-items: flex-start !important; }
+}
